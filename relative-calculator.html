@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亲戚关系计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .relative-calculator {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .calculator-header {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .calculator-body {
+            padding: 30px;
+        }
+        
+        .relation-input {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .relation-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .relation-btn {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .relation-btn:hover {
+            border-color: #ef4444;
+            background: #fef2f2;
+            transform: translateY(-2px);
+        }
+        
+        .relation-btn.male {
+            color: #3b82f6;
+        }
+        
+        .relation-btn.female {
+            color: #ec4899;
+        }
+        
+        .current-path {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .path-item {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .result-title {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .result-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .result-description {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-clear {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-clear:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-back {
+            background: #fbbf24;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: #f59e0b;
+        }
+        
+        .info-section {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .gender-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .gender-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .gender-btn.active {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .gender-btn.male.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+        
+        .gender-btn.female.active {
+            border-color: #ec4899;
+            background: #fdf2f8;
+            color: #ec4899;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calculator-header {
+                padding: 20px;
+            }
+            
+            .calculator-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .calculator-header p {
+                font-size: 0.9rem;
+            }
+            
+            .calculator-body {
+                padding: 20px;
+            }
+            
+            .relation-input {
+                padding: 15px;
+            }
+            
+            .relation-input h5 {
+                font-size: 1rem;
+            }
+            
+            .relation-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 8px;
+            }
+            
+            .relation-btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .current-path {
+                padding: 12px;
+                min-height: 50px;
+            }
+            
+            .path-item {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .result-card {
+                padding: 20px;
+            }
+            
+            .result-title {
+                font-size: 1rem;
+            }
+            
+            .result-value {
+                font-size: 2rem;
+            }
+            
+            .result-description {
+                font-size: 0.85rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn-action {
+                width: 100%;
+            }
+            
+            .info-section {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .info-section h6 {
+                font-size: 1rem;
+            }
+            
+            .info-section ul {
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 5px;
+            }
+            
+            .relative-calculator {
+                border-radius: 15px;
+            }
+            
+            .calculator-header {
+                padding: 15px;
+            }
+            
+            .calculator-header h2 {
+                font-size: 1.25rem;
+            }
+            
+            .calculator-header p {
+                font-size: 0.85rem;
+            }
+            
+            .calculator-body {
+                padding: 15px;
+            }
+            
+            .gender-selector {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .gender-btn {
+                padding: 12px;
+                font-size: 0.9rem;
+            }
+            
+            .relation-input {
+                padding: 12px;
+                margin-bottom: 15px;
+            }
+            
+            .relation-input h5 {
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+            
+            .relation-buttons {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                gap: 6px;
+            }
+            
+            .relation-btn {
+                padding: 8px;
+                font-size: 0.85rem;
+            }
+            
+            .current-path {
+                padding: 10px;
+                min-height: 45px;
+                gap: 6px;
+            }
+            
+            .path-item {
+                padding: 5px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .result-card {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            
+            .result-title {
+                font-size: 0.95rem;
+                margin-bottom: 8px;
+            }
+            
+            .result-value {
+                font-size: 1.75rem;
+                margin-bottom: 12px;
+            }
+            
+            .result-description {
+                font-size: 0.8rem;
+            }
+            
+            .action-buttons {
+                margin-top: 15px;
+                gap: 8px;
+            }
+            
+            .btn-action {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .info-section {
+                padding: 10px;
+                margin-top: 15px;
+            }
+            
+            .info-section h6 {
+                font-size: 0.95rem;
+            }
+            
+            .info-section ul {
+                font-size: 0.8rem;
+                padding-left: 20px;
+            }
+            
+            .info-section li {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="relative-calculator">
+        <div class="calculator-header">
+            <h2><i class="fas fa-users me-2"></i>亲戚关系计算器</h2>
+            <p class="mb-0">轻松搞定复杂的亲戚称呼</p>
+        </div>
+        
+        <div class="calculator-body">
+            <div class="gender-selector">
+                <button class="gender-btn male active" onclick="setGender('male')">
+                    <i class="fas fa-mars me-2"></i>我是男性
+                </button>
+                <button class="gender-btn female" onclick="setGender('female')">
+                    <i class="fas fa-venus me-2"></i>我是女性
+                </button>
+            </div>
+            
+            <div class="relation-input">
+                <h5 class="mb-3"><i class="fas fa-route me-2"></i>选择关系路径</h5>
+                
+                <div class="current-path" id="currentPath">
+                    <span class="text-muted">请选择亲戚关系...</span>
+                </div>
+                
+                <div class="relation-buttons" id="relationButtons">
+                    <!-- 动态生成按钮 -->
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-action btn-back" onclick="backStep()">
+                    <i class="fas fa-undo me-2"></i>撤销
+                </button>
+                <button class="btn-action btn-clear" onclick="clearAll()">
+                    <i class="fas fa-trash me-2"></i>清空
+                </button>
+            </div>
+            
+            <div id="resultSection" style="display: none;">
+                <div class="result-card">
+                    <div class="result-title">Ta 应该称呼为</div>
+                    <div class="result-value" id="resultName">-</div>
+                    <div class="result-description" id="resultDescription"></div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h6><i class="fas fa-lightbulb me-2"></i>使用说明</h6>
+                <ul class="mb-0 small">
+                    <li>首先选择您的性别</li>
+                    <li>然后按照实际关系依次点击按钮</li>
+                    <li>系统会自动计算出正确的称呼</li>
+                    <li><strong>支持复杂的多代亲戚关系（最多四级）</strong></li>
+                    <li>包含：曾祖父母、高祖父母、堂表兄弟姐妹、侄孙、外甥孙、玄孙等</li>
+                    <li>共支持 <strong>150+</strong> 种亲戚关系称呼</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let myGender = 'male'; // male or female
+        let relationPath = [];
+        
+        // 关系数据库
+        const relations = {
+            initial: {
+                male: [
+                    { key: 'f', label: '父亲', gender: 'male' },
+                    { key: 'm', label: '母亲', gender: 'female' },
+                    { key: 'h', label: '妻子', gender: 'female' },
+                    { key: 'ob', label: '哥哥', gender: 'male' },
+                    { key: 'lb', label: '弟弟', gender: 'male' },
+                    { key: 'os', label: '姐姐', gender: 'female' },
+                    { key: 'ls', label: '妹妹', gender: 'female' },
+                    { key: 's', label: '儿子', gender: 'male' },
+                    { key: 'd', label: '女儿', gender: 'female' }
+                ],
+                female: [
+                    { key: 'f', label: '父亲', gender: 'male' },
+                    { key: 'm', label: '母亲', gender: 'female' },
+                    { key: 'h', label: '丈夫', gender: 'male' },
+                    { key: 'ob', label: '哥哥', gender: 'male' },
+                    { key: 'lb', label: '弟弟', gender: 'male' },
+                    { key: 'os', label: '姐姐', gender: 'female' },
+                    { key: 'ls', label: '妹妹', gender: 'female' },
+                    { key: 's', label: '儿子', gender: 'male' },
+                    { key: 'd', label: '女儿', gender: 'female' }
+                ]
+            },
+            common: [
+                { key: 'f', label: '父亲', gender: 'male' },
+                { key: 'm', label: '母亲', gender: 'female' },
+                { key: 'h', label: '配偶', gender: null },
+                { key: 'ob', label: '哥哥', gender: 'male' },
+                { key: 'lb', label: '弟弟', gender: 'male' },
+                { key: 'os', label: '姐姐', gender: 'female' },
+                { key: 'ls', label: '妹妹', gender: 'female' },
+                { key: 's', label: '儿子', gender: 'male' },
+                { key: 'd', label: '女儿', gender: 'female' }
+            ]
+        };
+        
+        // 称呼映射表（扩展版 - 支持三级、四级关系）
+        const nameMap = {
+            // 一级关系
+            'f': '父亲/爸爸',
+            'm': '母亲/妈妈',
+            'h': '配偶',
+            'ob': '哥哥',
+            'lb': '弟弟',
+            'os': '姐姐',
+            'ls': '妹妹',
+            's': '儿子',
+            'd': '女儿',
+            
+            // 二级关系 - 父系
+            'f,f': '爷爷/祖父',
+            'f,m': '奶奶/祖母',
+            'f,ob': '伯父/伯伯',
+            'f,lb': '叔叔/叔父',
+            'f,os': '姑妈/姑姑',
+            'f,ls': '姑妈/姑姑',
+            'f,ob,h': '伯母',
+            'f,lb,h': '婶婶/婶母',
+            'f,os,h': '姑父',
+            'f,ls,h': '姑父',
+            
+            // 二级关系 - 母系
+            'm,f': '外公/外祖父',
+            'm,m': '外婆/外祖母',
+            'm,ob': '舅舅/舅父',
+            'm,lb': '舅舅/舅父',
+            'm,os': '姨妈/姨母',
+            'm,ls': '姨妈/姨母',
+            'm,ob,h': '舅妈',
+            'm,lb,h': '舅妈',
+            'm,os,h': '姨父',
+            'm,ls,h': '姨父',
+            
+            // 二级关系 - 子女
+            's,s': '孙子',
+            's,d': '孙女',
+            'd,s': '外孙',
+            'd,d': '外孙女',
+            's,h': '儿媳',
+            'd,h': '女婿',
+            
+            // 二级关系 - 兄弟姐妹的子女
+            'ob,s': '侄子',
+            'ob,d': '侄女',
+            'lb,s': '侄子',
+            'lb,d': '侄女',
+            'os,s': '外甥',
+            'os,d': '外甥女',
+            'ls,s': '外甥',
+            'ls,d': '外甥女',
+            'ob,s,h': '侄媳',
+            'ob,d,h': '侄女婿',
+            'lb,s,h': '侄媳',
+            'lb,d,h': '侄女婿',
+            
+            // 三级关系 - 曾祖父母
+            'f,f,f': '曾祖父/太爷爷',
+            'f,f,m': '曾祖母/太奶奶',
+            'f,m,f': '曾外祖父',
+            'f,m,m': '曾外祖母',
+            'm,f,f': '曾外祖父',
+            'm,f,m': '曾外祖母',
+            'm,m,f': '曾外祖父',
+            'm,m,m': '曾外祖母',
+            
+            // 三级关系 - 堂兄弟姐妹（父系）
+            'f,ob,s': '堂哥/堂兄',
+            'f,ob,d': '堂姐/堂姊',
+            'f,lb,s': '堂弟',
+            'f,lb,d': '堂妹',
+            'f,os,s': '姑表哥/姑表兄',
+            'f,os,d': '姑表姐/姑表姊',
+            'f,ls,s': '姑表弟',
+            'f,ls,d': '姑表妹',
+            
+            // 三级关系 - 表兄弟姐妹（母系）
+            'm,ob,s': '舅表哥/表哥',
+            'm,ob,d': '舅表姐/表姐',
+            'm,lb,s': '舅表弟/表弟',
+            'm,lb,d': '舅表妹/表妹',
+            'm,os,s': '姨表哥/表哥',
+            'm,os,d': '姨表姐/表姐',
+            'm,ls,s': '姨表弟/表弟',
+            'm,ls,d': '姨表妹/表妹',
+            
+            // 三级关系 - 爷爷奶奶的兄弟姐妹
+            'f,f,ob': '伯祖父/伯公',
+            'f,f,lb': '叔祖父/叔公',
+            'f,f,os': '姑祖母/姑婆',
+            'f,f,ls': '姑祖母/姑婆',
+            'f,m,ob': '舅祖父/舅公',
+            'f,m,lb': '舅祖父/舅公',
+            'f,m,os': '姨祖母/姨婆',
+            'f,m,ls': '姨祖母/姨婆',
+            
+            // 三级关系 - 外公外婆的兄弟姐妹
+            'm,f,ob': '外伯祖父/外伯公',
+            'm,f,lb': '外叔祖父/外叔公',
+            'm,f,os': '外姑祖母/外姑婆',
+            'm,f,ls': '外姑祖母/外姑婆',
+            'm,m,ob': '外舅祖父/外舅公',
+            'm,m,lb': '外舅祖父/外舅公',
+            'm,m,os': '外姨祖母/外姨婆',
+            'm,m,ls': '外姨祖母/外姨婆',
+            
+            // 三级关系 - 曾孙
+            's,s,s': '曾孙',
+            's,s,d': '曾孙女',
+            's,d,s': '曾孙',
+            's,d,d': '曾孙女',
+            'd,s,s': '外曾孙',
+            'd,s,d': '外曾孙女',
+            'd,d,s': '外曾孙',
+            'd,d,d': '外曾孙女',
+            
+            // 三级关系 - 侄孙
+            'ob,s,s': '侄孙',
+            'ob,s,d': '侄孙女',
+            'ob,d,s': '侄孙',
+            'ob,d,d': '侄孙女',
+            'lb,s,s': '侄孙',
+            'lb,s,d': '侄孙女',
+            'lb,d,s': '侄孙',
+            'lb,d,d': '侄孙女',
+            
+            // 三级关系 - 外甥孙
+            'os,s,s': '外甥孙',
+            'os,s,d': '外甥孙女',
+            'os,d,s': '外甥孙',
+            'os,d,d': '外甥孙女',
+            'ls,s,s': '外甥孙',
+            'ls,s,d': '外甥孙女',
+            'ls,d,s': '外甥孙',
+            'ls,d,d': '外甥孙女',
+            
+            // 四级关系 - 高祖父母
+            'f,f,f,f': '高祖父',
+            'f,f,f,m': '高祖母',
+            'f,f,m,f': '高外祖父',
+            'f,f,m,m': '高外祖母',
+            'f,m,f,f': '高外祖父',
+            'f,m,f,m': '高外祖母',
+            'f,m,m,f': '高外祖父',
+            'f,m,m,m': '高外祖母',
+            'm,f,f,f': '高外祖父',
+            'm,f,f,m': '高外祖母',
+            'm,f,m,f': '高外祖父',
+            'm,f,m,m': '高外祖母',
+            'm,m,f,f': '高外祖父',
+            'm,m,f,m': '高外祖母',
+            'm,m,m,f': '高外祖父',
+            'm,m,m,m': '高外祖母',
+            
+            // 四级关系 - 堂兄弟姐妹的子女
+            'f,ob,s,s': '堂侄',
+            'f,ob,s,d': '堂侄女',
+            'f,ob,d,s': '堂外甥',
+            'f,ob,d,d': '堂外甥女',
+            'f,lb,s,s': '堂侄',
+            'f,lb,s,d': '堂侄女',
+            'f,lb,d,s': '堂外甥',
+            'f,lb,d,d': '堂外甥女',
+            
+            // 四级关系 - 表兄弟姐妹的子女
+            'm,ob,s,s': '表侄',
+            'm,ob,s,d': '表侄女',
+            'm,ob,d,s': '表外甥',
+            'm,ob,d,d': '表外甥女',
+            'm,lb,s,s': '表侄',
+            'm,lb,s,d': '表侄女',
+            'm,lb,d,s': '表外甥',
+            'm,lb,d,d': '表外甥女',
+            'm,os,s,s': '表侄',
+            'm,os,s,d': '表侄女',
+            'm,os,d,s': '表外甥',
+            'm,os,d,d': '表外甥女',
+            'm,ls,s,s': '表侄',
+            'm,ls,s,d': '表侄女',
+            'm,ls,d,s': '表外甥',
+            'm,ls,d,d': '表外甥女',
+            
+            // 四级关系 - 玄孙
+            's,s,s,s': '玄孙',
+            's,s,s,d': '玄孙女',
+            's,s,d,s': '玄孙',
+            's,s,d,d': '玄孙女',
+            's,d,s,s': '玄孙',
+            's,d,s,d': '玄孙女',
+            's,d,d,s': '玄孙',
+            's,d,d,d': '玄孙女',
+            'd,s,s,s': '外玄孙',
+            'd,s,s,d': '外玄孙女',
+            'd,s,d,s': '外玄孙',
+            'd,s,d,d': '外玄孙女',
+            'd,d,s,s': '外玄孙',
+            'd,d,s,d': '外玄孙女',
+            'd,d,d,s': '外玄孙',
+            'd,d,d,d': '外玄孙女',
+            
+            // 四级关系 - 伯祖父叔祖父的子女
+            'f,f,ob,s': '堂伯父/堂伯',
+            'f,f,ob,d': '堂姑母/堂姑',
+            'f,f,lb,s': '堂叔父/堂叔',
+            'f,f,lb,d': '堂姑母/堂姑',
+            
+            // 四级关系 - 姑祖母的子女
+            'f,f,os,s': '表伯父/表伯',
+            'f,f,os,d': '表姑母/表姑',
+            'f,f,ls,s': '表叔父/表叔',
+            'f,f,ls,d': '表姑母/表姑'
+        };
+        
+        function setGender(gender) {
+            myGender = gender;
+            document.querySelectorAll('.gender-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            clearAll();
+        }
+        
+        function updateButtons() {
+            const container = document.getElementById('relationButtons');
+            container.innerHTML = '';
+            
+            const availableRelations = relationPath.length === 0 
+                ? relations.initial[myGender] 
+                : relations.common;
+            
+            availableRelations.forEach(rel => {
+                const btn = document.createElement('button');
+                btn.className = `relation-btn ${rel.gender || ''}`;
+                btn.textContent = rel.label;
+                btn.onclick = () => addRelation(rel);
+                container.appendChild(btn);
+            });
+        }
+        
+        function addRelation(relation) {
+            relationPath.push(relation);
+            updatePath();
+            calculateResult();
+            updateButtons();
+        }
+        
+        function updatePath() {
+            const container = document.getElementById('currentPath');
+            
+            if (relationPath.length === 0) {
+                container.innerHTML = '<span class="text-muted">请选择亲戚关系...</span>';
+                return;
+            }
+            
+            container.innerHTML = relationPath.map(rel => 
+                `<span class="path-item">${rel.label}</span>`
+            ).join('<i class="fas fa-arrow-right mx-2"></i>');
+        }
+        
+        function calculateResult() {
+            if (relationPath.length === 0) {
+                document.getElementById('resultSection').style.display = 'none';
+                return;
+            }
+            
+            const pathKey = relationPath.map(r => r.key).join(',');
+            const resultName = nameMap[pathKey] || '未知称呼';
+            
+            document.getElementById('resultName').textContent = resultName;
+            document.getElementById('resultDescription').textContent = 
+                `关系路径：${relationPath.map(r => r.label).join(' → ')}`;
+            document.getElementById('resultSection').style.display = 'block';
+        }
+        
+        function backStep() {
+            if (relationPath.length > 0) {
+                relationPath.pop();
+                updatePath();
+                calculateResult();
+                updateButtons();
+            }
+        }
+        
+        function clearAll() {
+            relationPath = [];
+            updatePath();
+            document.getElementById('resultSection').style.display = 'none';
+            updateButtons();
+        }
+        
+        // 初始化
+        updateButtons();
+    </script>
+</body>
+</html>
