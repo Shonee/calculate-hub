@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算器工具集 - 多功能计算器导航</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- 数据分析配置 -->
+    <script src="components/analytics-config.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .calculator-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .calculator-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .calculator-card .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .calculator-card .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .stat-card {
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .glass-effect {
+                padding: 20px;
+            }
+            
+            .glass-effect h2 {
+                font-size: 1.5rem;
+            }
+            
+            .glass-effect p {
+                font-size: 0.95rem;
+            }
+            
+            .calculator-card {
+                padding: 20px !important;
+            }
+            
+            .calculator-card .card-icon {
+                font-size: 2.5rem;
+            }
+            
+            .calculator-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .calculator-card p {
+                font-size: 0.85rem;
+            }
+            
+            .stat-card {
+                padding: 15px !important;
+            }
+            
+            .stat-card i {
+                font-size: 2rem !important;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.5rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .glass-effect {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .glass-effect h2 {
+                font-size: 1.3rem;
+            }
+            
+            .glass-effect p {
+                font-size: 0.9rem;
+            }
+            
+            .calculator-card {
+                padding: 15px !important;
+            }
+            
+            .calculator-card .card-icon {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .calculator-card h3 {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .calculator-card p {
+                font-size: 0.8rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .calculator-card .badge {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .stat-card {
+                padding: 12px !important;
+            }
+            
+            .stat-card i {
+                font-size: 1.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.25rem !important;
+            }
+            
+            .stat-card p {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 引入公共页头 -->
+    <div id="common-header"></div>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 欢迎区域 -->
+        <div class="glass-effect rounded-2xl shadow-2xl p-8 mb-8 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-calculator text-blue-500 mr-3"></i>
+                欢迎使用计算器工具集
+            </h2>
+            <p class="text-gray-600 text-lg">
+                选择您需要的计算器工具，点击卡片即可在新页面中打开使用
+            </p>
+        </div>
+        
+        <!-- 计算器卡片网格 -->
+        <div class="row g-4">
+            <!-- 普通计算器 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="calculator-card p-6 text-center position-relative" onclick="openCalculator('basic-calculator.html')">
+                    <span class="badge bg-success">常用</span>
+                    <div class="card-icon text-blue-500">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">普通计算器</h3>
+                    <p class="text-gray-600 text-sm mb-4">基础四则运算，简单实用</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-primary">基础</span>
+                        <span class="badge bg-info">快速</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 科学计算器 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="calculator-card p-6 text-center position-relative" onclick="openCalculator('scientific-calculator.html')">
+                    <span class="badge bg-purple-500 text-white" style="background-color: #8b5cf6;">专业</span>
+                    <div class="card-icon text-purple-500">
+                        <i class="fas fa-square-root-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">科学计算器</h3>
+                    <p class="text-gray-600 text-sm mb-4">支持三角函数、对数等高级运算</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-purple-500" style="background-color: #8b5cf6;">高级</span>
+                        <span class="badge bg-secondary">专业</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 贷款计算器 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="calculator-card p-6 text-center position-relative" onclick="openCalculator('loan-calculator.html')">
+                    <span class="badge bg-warning">热门</span>
+                    <div class="card-icon text-green-500">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">贷款计算器</h3>
+                    <p class="text-gray-600 text-sm mb-4">房贷计算、提前还款规划</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-success">实用</span>
+                        <span class="badge bg-warning">理财</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 个税计算器 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="calculator-card p-6 text-center position-relative" onclick="openCalculator('tax-calculator.html')">
+                    <div class="card-icon text-yellow-500">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">个税计算器</h3>
+                    <p class="text-gray-600 text-sm mb-4">个人所得税计算与优化</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-warning">税务</span>
+                        <span class="badge bg-info">工资</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 亲戚计算器 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="calculator-card p-6 text-center position-relative" onclick="openCalculator('relative-calculator.html')">
+                    <span class="badge bg-danger">趣味</span>
+                    <div class="card-icon text-red-500">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">亲戚计算器</h3>
+                    <p class="text-gray-600 text-sm mb-4">快速查询亲戚称呼关系</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-danger">趣味</span>
+                        <span class="badge bg-secondary">社交</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 添加更多 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="calculator-card p-6 text-center position-relative" onclick="addCustomCalculator()" style="border: 2px dashed #ccc;">
+                    <div class="card-icon text-gray-400">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-600 mb-2">添加自定义</h3>
+                    <p class="text-gray-500 text-sm mb-4">敬请期待更多计算器工具</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-secondary">即将推出</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 使用统计 -->
+        <div class="glass-effect rounded-2xl shadow-2xl p-6 mt-8">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
+                使用统计
+            </h3>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-card bg-blue-50 p-4 rounded-lg text-center">
+                        <i class="fas fa-mouse-pointer text-blue-500 text-3xl mb-2"></i>
+                        <h3 class="text-2xl font-bold text-blue-600" id="statTotalClicks">0</h3>
+                        <p class="text-sm text-gray-600">总使用次数</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card bg-green-50 p-4 rounded-lg text-center">
+                        <i class="fas fa-calendar-day text-green-500 text-3xl mb-2"></i>
+                        <h3 class="text-2xl font-bold text-green-600" id="statTodayClicks">0</h3>
+                        <p class="text-sm text-gray-600">今日使用</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card bg-purple-50 p-4 rounded-lg text-center">
+                        <i class="fas fa-star text-purple-500 text-3xl mb-2"></i>
+                        <h3 class="text-2xl font-bold text-purple-600" id="statFavorite">-</h3>
+                        <p class="text-sm text-gray-600">最常用工具</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 快捷操作提示 -->
+        <div class="mt-6 text-center text-white">
+            <p class="text-sm opacity-80">
+                <i class="fas fa-lightbulb mr-2"></i>
+                提示：点击任意计算器卡片即可在新页面中打开使用
+            </p>
+        </div>
+    </main>
+
+    <!-- 引入公共页脚 -->
+    <div id="common-footer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 加载公共组件
+        $(document).ready(function() {
+            $('#common-header').load('components/common-header.html');
+            $('#common-footer').load('components/common-footer.html', function() {
+                // 页脚加载完成后更新统计
+                updateStats();
+            });
+        });
+        
+        // 打开计算器（新窗口）
+        function openCalculator(url) {
+            // 记录使用统计
+            recordUsage(url);
+            
+            // 在新窗口打开
+            window.open(url, '_blank');
+        }
+        
+        // 记录使用统计
+        function recordUsage(url) {
+            let stats = JSON.parse(localStorage.getItem('calculatorStats') || '{}');
+            const today = new Date().toDateString();
+            
+            // 初始化统计数据
+            if (!stats.totalClicks) stats.totalClicks = 0;
+            if (!stats.todayClicks) stats.todayClicks = 0;
+            if (!stats.lastDate) stats.lastDate = today;
+            if (!stats.calculatorUsage) stats.calculatorUsage = {};
+            
+            // 检查日期是否变化
+            if (stats.lastDate !== today) {
+                stats.todayClicks = 0;
+                stats.lastDate = today;
+            }
+            
+            // 更新统计
+            stats.totalClicks++;
+            stats.todayClicks++;
+            
+            // 提取计算器类型
+            const type = url.replace('-calculator.html', '').replace('.html', '');
+            stats.calculatorUsage[type] = (stats.calculatorUsage[type] || 0) + 1;
+            
+            // 保存
+            localStorage.setItem('calculatorStats', JSON.stringify(stats));
+            
+            // 更新显示
+            updateStats();
+        }
+        
+        // 更新统计显示
+        function updateStats() {
+            const stats = JSON.parse(localStorage.getItem('calculatorStats') || '{}');
+            const today = new Date().toDateString();
+            
+            // 检查日期
+            if (stats.lastDate !== today) {
+                stats.todayClicks = 0;
+                stats.lastDate = today;
+                localStorage.setItem('calculatorStats', JSON.stringify(stats));
+            }
+            
+            // 更新显示
+            document.getElementById('statTotalClicks').textContent = stats.totalClicks || 0;
+            document.getElementById('statTodayClicks').textContent = stats.todayClicks || 0;
+            
+            // 找出最常用的计算器
+            const calculatorNames = {
+                'basic': '普通计算器',
+                'scientific': '科学计算器',
+                'loan': '贷款计算器',
+                'tax': '个税计算器',
+                'relative': '亲戚计算器'
+            };
+            
+            let maxUsage = 0;
+            let mostUsed = '-';
+            for (const [key, value] of Object.entries(stats.calculatorUsage || {})) {
+                if (value > maxUsage) {
+                    maxUsage = value;
+                    mostUsed = calculatorNames[key] || key;
+                }
+            }
+            
+            document.getElementById('statFavorite').textContent = mostUsed;
+        }
+        
+        // 添加自定义计算器
+        function addCustomCalculator() {
+            alert('更多计算器工具正在开发中，敬请期待！\n\n如有需求，欢迎反馈建议。');
+        }
+    </script>
+</body>
+</html>
