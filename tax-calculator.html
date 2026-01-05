@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人所得税计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .tax-calculator {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .tax-calculator {
+                border-radius: 15px;
+                max-width: 100%;
+            }
+            
+            .calculator-header {
+                padding: 20px 15px;
+            }
+            
+            .calculator-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .calculator-body {
+                padding: 20px 15px;
+            }
+            
+            .input-group-text {
+                min-width: 100px;
+                font-size: 0.875rem;
+            }
+            
+            .result-value {
+                font-size: 1.25rem;
+            }
+            
+            .result-label {
+                font-size: 0.875rem;
+            }
+            
+            .btn-calculate {
+                padding: 10px 30px;
+                font-size: 1rem;
+            }
+            
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            
+            .card-body {
+                padding: 15px;
+            }
+            
+            .form-label {
+                font-size: 0.875rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.875rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .calculator-header h2 {
+                font-size: 1.25rem;
+            }
+            
+            .input-group-text {
+                min-width: 80px;
+                font-size: 0.75rem;
+                padding: 0.375rem 0.5rem;
+            }
+            
+            .result-value {
+                font-size: 1.1rem;
+            }
+            
+            .btn-calculate {
+                width: 100%;
+                padding: 12px;
+            }
+            
+            .table {
+                font-size: 0.75rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.5rem 0.25rem;
+            }
+        }
+        
+        .calculator-header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .calculator-body {
+            padding: 30px;
+        }
+        
+        .input-group-text {
+            min-width: 140px;
+            background: #f8f9fa;
+            font-weight: 500;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .tax-table {
+            margin-top: 30px;
+        }
+        
+        .tax-table table {
+            background: white;
+        }
+        
+        .tax-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .info-card {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        
+        .btn-calculate {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .card-header h6 {
+            margin: 0;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-label small {
+            font-weight: normal;
+            display: block;
+            margin-top: 2px;
+        }
+        
+        .deduction-panel {
+            background: #f9fafb;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="tax-calculator">
+        <div class="calculator-header">
+            <h2><i class="fas fa-coins me-2"></i>个人所得税计算器</h2>
+            <p class="mb-0">2024年最新税率标准</p>
+        </div>
+        
+        <div class="calculator-body">
+            <form id="taxForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-money-bill-wave me-2"></i>税前月薪
+                            </span>
+                            <input type="number" class="form-control" id="monthlySalary" 
+                                   placeholder="请输入税前月薪" min="0" step="0.01" required>
+                            <span class="input-group-text">元</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-calendar-alt me-2"></i>年终奖
+                            </span>
+                            <input type="number" class="form-control" id="yearEndBonus" 
+                                   placeholder="请输入年终奖" min="0" step="0.01" value="0">
+                            <span class="input-group-text">元</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-calculator me-1"></i>年终奖计税方式
+                        </label>
+                        <select class="form-select" id="bonusTaxMethod">
+                            <option value="separate">单独计税（推荐低收入）</option>
+                            <option value="combined">并入综合所得（推荐高收入）</option>
+                        </select>
+                        <small class="text-muted">系统会自动选择最优方案并提示</small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-shield-alt me-2"></i>五险一金
+                            </span>
+                            <input type="number" class="form-control" id="socialInsurance" 
+                                   placeholder="个人缴纳部分" min="0" step="0.01" value="0">
+                            <span class="input-group-text">元</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <div class="card mt-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-minus-circle me-2"></i>专项附加扣除配置
+                                    <button type="button" class="btn btn-sm btn-outline-primary float-end" 
+                                            onclick="toggleDeductionPanel()">
+                                        <i class="fas fa-cog me-1"></i>展开/收起
+                                    </button>
+                                </h6>
+                            </div>
+                            <div class="card-body" id="deductionPanel" style="display: none;">
+                                <div class="row g-3">
+                                    <!-- 子女教育 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-child me-1"></i>子女教育
+                                            <small class="text-muted">(1000元/月/子女)</small>
+                                        </label>
+                                        <input type="number" class="form-control" id="childEducation" 
+                                               placeholder="子女数量" min="0" step="1" value="0">
+                                    </div>
+                                    
+                                    <!-- 3岁以下婴幼儿照护 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-baby me-1"></i>3岁以下婴幼儿照护
+                                            <small class="text-muted">(1000元/月/婴幼儿)</small>
+                                        </label>
+                                        <input type="number" class="form-control" id="infantCare" 
+                                               placeholder="婴幼儿数量" min="0" step="1" value="0">
+                                    </div>
+                                    
+                                    <!-- 继续教育 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-graduation-cap me-1"></i>继续教育
+                                        </label>
+                                        <select class="form-select" id="continuingEducation">
+                                            <option value="0">无</option>
+                                            <option value="400">学历教育(400元/月)</option>
+                                            <option value="300">职业资格证书(3600元/年，按月300元)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- 大病医疗 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-hospital me-1"></i>大病医疗
+                                            <small class="text-muted">(超过15000元部分，限额80000元/年)</small>
+                                        </label>
+                                        <input type="number" class="form-control" id="medicalExpense" 
+                                               placeholder="年度医疗费用" min="0" step="0.01" value="0">
+                                    </div>
+                                    
+                                    <!-- 住房贷款利息 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-home me-1"></i>住房贷款利息
+                                            <small class="text-muted">(1000元/月，首套住房)</small>
+                                        </label>
+                                        <select class="form-select" id="housingLoan">
+                                            <option value="0">无</option>
+                                            <option value="1000">首套住房贷款(1000元/月)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- 住房租金 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-building me-1"></i>住房租金
+                                        </label>
+                                        <select class="form-select" id="housingRent">
+                                            <option value="0">无</option>
+                                            <option value="1500">直辖市/省会/计划单列市(1500元/月)</option>
+                                            <option value="1100">市辖区户籍人口>100万(1100元/月)</option>
+                                            <option value="800">市辖区户籍人口≤100万(800元/月)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- 赡养老人 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-user-friends me-1"></i>赡养老人
+                                            <small class="text-muted">(60岁以上父母)</small>
+                                        </label>
+                                        <select class="form-select" id="elderCare">
+                                            <option value="0">无</option>
+                                            <option value="2000">独生子女(2000元/月)</option>
+                                            <option value="1000">非独生子女-平均分摊(1000元/月)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- 个人养老金 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-piggy-bank me-1"></i>个人养老金
+                                            <small class="text-muted">(限额12000元/年，1000元/月)</small>
+                                        </label>
+                                        <input type="number" class="form-control" id="personalPension" 
+                                               placeholder="月度缴纳金额" min="0" max="1000" step="0.01" value="0">
+                                    </div>
+                                    
+                                    <!-- 其他扣除 -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">
+                                            <i class="fas fa-ellipsis-h me-1"></i>其他扣除
+                                            <small class="text-muted">(手动输入)</small>
+                                        </label>
+                                        <input type="number" class="form-control" id="otherDeduction" 
+                                               placeholder="其他专项扣除" min="0" step="0.01" value="0">
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3 mb-0">
+                                    <small>
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        <strong>注意：</strong>住房贷款利息和住房租金不能同时享受，系统会自动选择金额较大的一项。
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 text-center mt-4">
+                        <button type="button" class="btn btn-primary btn-calculate" onclick="calculateTax()">
+                            <i class="fas fa-calculator me-2"></i>开始计算
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div id="resultSection" style="display: none;">
+                <div class="result-card">
+                    <h4 class="mb-4"><i class="fas fa-chart-line me-2"></i>计算结果</h4>
+                    
+                    <div class="result-item">
+                        <span class="result-label">税前月薪</span>
+                        <span class="result-value" id="resultGrossSalary">¥0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">应纳税所得额</span>
+                        <span class="result-value" id="resultTaxableIncome">¥0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">个人所得税</span>
+                        <span class="result-value text-warning" id="resultTax">¥0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">税后月薪</span>
+                        <span class="result-value text-success" id="resultNetSalary">¥0</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">年度税后收入</span>
+                        <span class="result-value" id="resultYearlyIncome">¥0</span>
+                    </div>
+                </div>
+                
+                <div id="deductionDetails" class="result-card mt-3" style="display: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                    <h5 class="mb-3"><i class="fas fa-receipt me-2"></i>专项附加扣除明细</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6" id="childEducationDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-child me-2"></i>子女教育</span>
+                                <span class="fw-bold" id="childEducationAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="infantCareDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-baby me-2"></i>婴幼儿照护</span>
+                                <span class="fw-bold" id="infantCareAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="continuingEducationDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-graduation-cap me-2"></i>继续教育</span>
+                                <span class="fw-bold" id="continuingEducationAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="medicalDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-hospital me-2"></i>大病医疗</span>
+                                <span class="fw-bold" id="medicalAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="housingDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-home me-2"></i>住房扣除</span>
+                                <span class="fw-bold" id="housingAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="elderCareDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-user-friends me-2"></i>赡养老人</span>
+                                <span class="fw-bold" id="elderCareAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="personalPensionDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-piggy-bank me-2"></i>个人养老金</span>
+                                <span class="fw-bold" id="personalPensionAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="otherDetail" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <span><i class="fas fa-ellipsis-h me-2"></i>其他扣除</span>
+                                <span class="fw-bold" id="otherAmount">¥0</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <hr style="border-color: rgba(255, 255, 255, 0.3);">
+                            <div class="d-flex justify-content-between">
+                                <span class="fs-5"><i class="fas fa-calculator me-2"></i>月度扣除合计</span>
+                                <span class="fs-4 fw-bold" id="totalDeductionAmount">¥0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 月度纳税明细表 -->
+                <div class="card mt-4" id="monthlyDetailTable" style="display: none;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>月度纳税明细</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>月份</th>
+                                        <th>税前收入</th>
+                                        <th>五险一金</th>
+                                        <th>专项扣除</th>
+                                        <th>累计应纳税所得额</th>
+                                        <th>累计应纳税额</th>
+                                        <th>本月应纳税额</th>
+                                        <th>税后收入</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthlyDetailBody">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 年度汇总表 -->
+                <div class="card mt-4" id="yearlyDetailTable" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>全年纳税汇总</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">全年税前收入</span>
+                                        <span class="fs-5 fw-bold text-primary" id="yearlyGrossIncome">¥0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">全年五险一金</span>
+                                        <span class="fs-5 fw-bold text-info" id="yearlySocialInsurance">¥0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">全年专项扣除</span>
+                                        <span class="fs-5 fw-bold text-info" id="yearlySpecialDeduction">¥0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">全年应纳税所得额</span>
+                                        <span class="fs-5 fw-bold text-warning" id="yearlyTaxableIncome">¥0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">全年个人所得税</span>
+                                        <span class="fs-5 fw-bold text-danger" id="yearlyTax">¥0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded p-3 bg-success bg-opacity-10">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted fw-bold">全年税后收入</span>
+                                        <span class="fs-4 fw-bold text-success" id="yearlyNetIncome">¥0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 p-3 bg-info bg-opacity-10 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-percentage me-2"></i>实际税率</span>
+                                <span class="fs-5 fw-bold text-info" id="effectiveTaxRate">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h6><i class="fas fa-info-circle me-2"></i>计算说明</h6>
+                    <ul class="mb-0">
+                        <li><strong>起征点：</strong>5000元/月（60000元/年）</li>
+                        <li><strong>计算公式：</strong>应纳税所得额 = 税前年薪 - 五险一金 - 起征点 - 专项附加扣除</li>
+                        <li><strong>个人所得税：</strong>应纳税所得额 × 税率 - 速算扣除数</li>
+                        <li><strong>税后月薪：</strong>税前月薪 - 五险一金 - 专项附加扣除 - 个人所得税</li>
+                        <li><strong>月度计税：</strong>采用累计预扣法，每月计算累计应纳税额，减去已缴税额得出本月应纳税额</li>
+                    </ul>
+                    
+                    <h6 class="mt-3"><i class="fas fa-list-ul me-2"></i>专项附加扣除标准（2024年）</h6>
+                    <ul class="mb-0">
+                        <li><strong>子女教育：</strong>每个子女1000元/月</li>
+                        <li><strong>3岁以下婴幼儿照护：</strong>每个婴幼儿1000元/月</li>
+                        <li><strong>继续教育：</strong>学历教育400元/月，职业资格证书3600元/年</li>
+                        <li><strong>大病医疗：</strong>超过15000元部分，限额80000元/年</li>
+                        <li><strong>住房贷款利息：</strong>首套住房1000元/月（最长240个月）</li>
+                        <li><strong>住房租金：</strong>直辖市/省会/计划单列市1500元/月，其他城市1100元/月或800元/月</li>
+                        <li><strong>赡养老人：</strong>独生子女2000元/月，非独生子女分摊不超过1000元/月</li>
+                        <li><strong>个人养老金：</strong>限额12000元/年（1000元/月），可在税前扣除</li>
+                        <li><strong>注意：</strong>住房贷款利息和住房租金只能选择其中一项扣除</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="tax-table">
+                <h5 class="mb-3"><i class="fas fa-table me-2"></i>个人所得税税率表（综合所得适用）</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>级数</th>
+                                <th>全年应纳税所得额</th>
+                                <th>税率（%）</th>
+                                <th>速算扣除数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>不超过36,000元</td>
+                                <td>3%</td>
+                                <td>0</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>超过36,000元至144,000元</td>
+                                <td>10%</td>
+                                <td>2,520</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>超过144,000元至300,000元</td>
+                                <td>20%</td>
+                                <td>16,920</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>超过300,000元至420,000元</td>
+                                <td>25%</td>
+                                <td>31,920</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>超过420,000元至660,000元</td>
+                                <td>30%</td>
+                                <td>52,920</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>超过660,000元至960,000元</td>
+                                <td>35%</td>
+                                <td>85,920</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>超过960,000元</td>
+                                <td>45%</td>
+                                <td>181,920</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 税率表（年度）
+        const taxBrackets = [
+            { limit: 36000, rate: 0.03, deduction: 0 },
+            { limit: 144000, rate: 0.10, deduction: 2520 },
+            { limit: 300000, rate: 0.20, deduction: 16920 },
+            { limit: 420000, rate: 0.25, deduction: 31920 },
+            { limit: 660000, rate: 0.30, deduction: 52920 },
+            { limit: 960000, rate: 0.35, deduction: 85920 },
+            { limit: Infinity, rate: 0.45, deduction: 181920 }
+        ];
+        
+        function toggleDeductionPanel() {
+            const panel = document.getElementById('deductionPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+        
+        function calculateSpecialDeductions() {
+            // 子女教育：1000元/月/子女
+            const childEducation = parseFloat(document.getElementById('childEducation').value) || 0;
+            const childEducationDeduction = childEducation * 1000;
+            
+            // 3岁以下婴幼儿照护：1000元/月/婴幼儿
+            const infantCare = parseFloat(document.getElementById('infantCare').value) || 0;
+            const infantCareDeduction = infantCare * 1000;
+            
+            // 继续教育
+            const continuingEducation = parseFloat(document.getElementById('continuingEducation').value) || 0;
+            
+            // 大病医疗：超过15000元部分，限额80000元/年
+            const medicalExpense = parseFloat(document.getElementById('medicalExpense').value) || 0;
+            let medicalDeduction = 0;
+            if (medicalExpense > 15000) {
+                medicalDeduction = Math.min(medicalExpense - 15000, 80000) / 12; // 转换为月度
+            }
+            
+            // 住房贷款利息
+            const housingLoan = parseFloat(document.getElementById('housingLoan').value) || 0;
+            
+            // 住房租金
+            const housingRent = parseFloat(document.getElementById('housingRent').value) || 0;
+            
+            // 住房贷款利息和住房租金不能同时享受，取较大值
+            const housingDeduction = Math.max(housingLoan, housingRent);
+            
+            // 赡养老人
+            const elderCare = parseFloat(document.getElementById('elderCare').value) || 0;
+            
+            // 个人养老金：限额1000元/月
+            const personalPension = Math.min(parseFloat(document.getElementById('personalPension').value) || 0, 1000);
+            
+            // 其他扣除
+            const otherDeduction = parseFloat(document.getElementById('otherDeduction').value) || 0;
+            
+            // 总计月度专项附加扣除
+            const totalMonthlyDeduction = childEducationDeduction + infantCareDeduction + 
+                                         continuingEducation + medicalDeduction + 
+                                         housingDeduction + elderCare + personalPension + otherDeduction;
+            
+            return {
+                monthly: totalMonthlyDeduction,
+                yearly: totalMonthlyDeduction * 12,
+                details: {
+                    childEducation: childEducationDeduction,
+                    infantCare: infantCareDeduction,
+                    continuingEducation: continuingEducation,
+                    medical: medicalDeduction,
+                    housing: housingDeduction,
+                    elderCare: elderCare,
+                    personalPension: personalPension,
+                    other: otherDeduction
+                }
+            };
+        }
+        
+        // 计算年终奖单独计税的税额
+        function calculateBonusTaxSeparate(bonus) {
+            if (bonus <= 0) return 0;
+            
+            // 年终奖单独计税：年终奖 / 12，找到对应税率
+            const monthlyBonus = bonus / 12;
+            let rate = 0;
+            let deduction = 0;
+            
+            // 根据月度金额确定税率（注意：这里使用月度税率表）
+            if (monthlyBonus <= 3000) {
+                rate = 0.03;
+                deduction = 0;
+            } else if (monthlyBonus <= 12000) {
+                rate = 0.10;
+                deduction = 210;
+            } else if (monthlyBonus <= 25000) {
+                rate = 0.20;
+                deduction = 1410;
+            } else if (monthlyBonus <= 35000) {
+                rate = 0.25;
+                deduction = 2660;
+            } else if (monthlyBonus <= 55000) {
+                rate = 0.30;
+                deduction = 4410;
+            } else if (monthlyBonus <= 80000) {
+                rate = 0.35;
+                deduction = 7160;
+            } else {
+                rate = 0.45;
+                deduction = 15160;
+            }
+            
+            return bonus * rate - deduction;
+        }
+        
+        function calculateTax() {
+            // 获取输入值
+            const monthlySalary = parseFloat(document.getElementById('monthlySalary').value) || 0;
+            const yearEndBonus = parseFloat(document.getElementById('yearEndBonus').value) || 0;
+            const socialInsurance = parseFloat(document.getElementById('socialInsurance').value) || 0;
+            const bonusTaxMethod = document.getElementById('bonusTaxMethod').value;
+            
+            if (monthlySalary <= 0) {
+                alert('请输入有效的税前月薪');
+                return;
+            }
+            
+            // 计算专项附加扣除
+            const specialDeductions = calculateSpecialDeductions();
+            
+            // 起征点
+            const threshold = 5000 * 12; // 60000元/年
+            
+            let tax = 0;
+            let bonusTax = 0;
+            let salaryTax = 0;
+            let taxableIncome = 0;
+            let yearlyGrossSalary = 0;
+            let yearlyDeductions = 0;
+            
+            if (bonusTaxMethod === 'separate' && yearEndBonus > 0) {
+                // 方案1：年终奖单独计税
+                // 工资部分
+                yearlyGrossSalary = monthlySalary * 12;
+                yearlyDeductions = socialInsurance * 12 + specialDeductions.yearly;
+                taxableIncome = Math.max(0, yearlyGrossSalary - yearlyDeductions - threshold);
+                
+                for (const bracket of taxBrackets) {
+                    if (taxableIncome <= bracket.limit) {
+                        salaryTax = taxableIncome * bracket.rate - bracket.deduction;
+                        break;
+                    }
+                }
+                
+                // 年终奖单独计税
+                bonusTax = calculateBonusTaxSeparate(yearEndBonus);
+                tax = salaryTax + bonusTax;
+                
+                // 加上年终奖到总收入
+                yearlyGrossSalary += yearEndBonus;
+            } else {
+                // 方案2：年终奖并入综合所得
+                yearlyGrossSalary = monthlySalary * 12 + yearEndBonus;
+                yearlyDeductions = socialInsurance * 12 + specialDeductions.yearly;
+                taxableIncome = Math.max(0, yearlyGrossSalary - yearlyDeductions - threshold);
+                
+                for (const bracket of taxBrackets) {
+                    if (taxableIncome <= bracket.limit) {
+                        tax = taxableIncome * bracket.rate - bracket.deduction;
+                        break;
+                    }
+                }
+                
+                salaryTax = tax;
+                bonusTax = 0;
+            }
+            
+            // 如果有年终奖，计算两种方案并比较
+            let betterMethod = bonusTaxMethod;
+            let taxDifference = 0;
+            if (yearEndBonus > 0) {
+                // 计算另一种方案的税额
+                let alternativeTax = 0;
+                if (bonusTaxMethod === 'separate') {
+                    // 当前是单独计税，计算并入的税额
+                    const combinedTaxableIncome = Math.max(0, (monthlySalary * 12 + yearEndBonus) - (socialInsurance * 12 + specialDeductions.yearly) - threshold);
+                    for (const bracket of taxBrackets) {
+                        if (combinedTaxableIncome <= bracket.limit) {
+                            alternativeTax = combinedTaxableIncome * bracket.rate - bracket.deduction;
+                            break;
+                        }
+                    }
+                } else {
+                    // 当前是并入，计算单独计税的税额
+                    const salaryTaxableIncome = Math.max(0, (monthlySalary * 12) - (socialInsurance * 12 + specialDeductions.yearly) - threshold);
+                    let tempSalaryTax = 0;
+                    for (const bracket of taxBrackets) {
+                        if (salaryTaxableIncome <= bracket.limit) {
+                            tempSalaryTax = salaryTaxableIncome * bracket.rate - bracket.deduction;
+                            break;
+                        }
+                    }
+                    alternativeTax = tempSalaryTax + calculateBonusTaxSeparate(yearEndBonus);
+                }
+                
+                taxDifference = alternativeTax - tax;
+                if (taxDifference < 0) {
+                    betterMethod = bonusTaxMethod === 'separate' ? 'combined' : 'separate';
+                }
+            }
+            
+            // 计算月度平均数据（用于显示）
+            const avgMonthlyTaxableIncome = taxableIncome / 12;
+            const avgMonthlyTax = tax / 12;
+            const avgMonthlyNetSalary = monthlySalary - socialInsurance - specialDeductions.monthly - avgMonthlyTax;
+            const yearlyNetIncome = yearlyGrossSalary - yearlyDeductions - tax;
+            
+            // 显示结果（显示月度平均值）
+            document.getElementById('resultGrossSalary').textContent = 
+                '¥' + monthlySalary.toFixed(2);
+            document.getElementById('resultTaxableIncome').textContent = 
+                '¥' + avgMonthlyTaxableIncome.toFixed(2) + ' (月均)';
+            document.getElementById('resultTax').textContent = 
+                '¥' + avgMonthlyTax.toFixed(2) + ' (月均)';
+            document.getElementById('resultNetSalary').textContent = 
+                '¥' + avgMonthlyNetSalary.toFixed(2) + ' (月均)';
+            document.getElementById('resultYearlyIncome').textContent = 
+                '¥' + yearlyNetIncome.toFixed(2);
+            
+            // 显示年终奖计税方式提示
+            if (yearEndBonus > 0) {
+                const bonusMethodText = bonusTaxMethod === 'separate' ? '单独计税' : '并入综合所得';
+                let tipHtml = `<div class="alert alert-warning mt-3">
+                    <h6><i class="fas fa-lightbulb me-2"></i>年终奖计税方式</h6>
+                    <p class="mb-2"><strong>当前方式：</strong>${bonusMethodText}</p>`;
+                
+                if (bonusTaxMethod === 'separate') {
+                    tipHtml += `<p class="mb-2"><strong>工资个税：</strong>¥${salaryTax.toFixed(2)}</p>`;
+                    tipHtml += `<p class="mb-2"><strong>年终奖个税：</strong>¥${bonusTax.toFixed(2)}</p>`;
+                }
+                
+                tipHtml += `<p class="mb-0"><strong>全年总税额：</strong>¥${tax.toFixed(2)}</p>`;
+                
+                if (Math.abs(taxDifference) > 0.01) {
+                    const betterMethodText = betterMethod === 'separate' ? '单独计税' : '并入综合所得';
+                    const savingText = Math.abs(taxDifference).toFixed(2);
+                    if (betterMethod !== bonusTaxMethod) {
+                        tipHtml += `<hr><p class="mb-0 text-danger"><i class="fas fa-exclamation-triangle me-1"></i><strong>建议：</strong>使用"${betterMethodText}"方式可节省 ¥${savingText} 元税款！</p>`;
+                    } else {
+                        tipHtml += `<hr><p class="mb-0 text-success"><i class="fas fa-check-circle me-1"></i>当前已是最优方案，比另一种方式节省 ¥${savingText} 元</p>`;
+                    }
+                }
+                
+                tipHtml += `</div>`;
+                
+                // 在结果卡片后插入提示
+                const resultCard = document.querySelector('.result-card');
+                const existingTip = document.getElementById('bonusTaxTip');
+                if (existingTip) {
+                    existingTip.remove();
+                }
+                const tipDiv = document.createElement('div');
+                tipDiv.id = 'bonusTaxTip';
+                tipDiv.innerHTML = tipHtml;
+                resultCard.parentNode.insertBefore(tipDiv, resultCard.nextSibling);
+            }
+            
+            // 显示专项附加扣除明细
+            let hasDeduction = false;
+            
+            if (specialDeductions.details.childEducation > 0) {
+                document.getElementById('childEducationDetail').style.display = 'block';
+                document.getElementById('childEducationAmount').textContent = 
+                    '¥' + specialDeductions.details.childEducation.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('childEducationDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.infantCare > 0) {
+                document.getElementById('infantCareDetail').style.display = 'block';
+                document.getElementById('infantCareAmount').textContent = 
+                    '¥' + specialDeductions.details.infantCare.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('infantCareDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.continuingEducation > 0) {
+                document.getElementById('continuingEducationDetail').style.display = 'block';
+                document.getElementById('continuingEducationAmount').textContent = 
+                    '¥' + specialDeductions.details.continuingEducation.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('continuingEducationDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.medical > 0) {
+                document.getElementById('medicalDetail').style.display = 'block';
+                document.getElementById('medicalAmount').textContent = 
+                    '¥' + specialDeductions.details.medical.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('medicalDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.housing > 0) {
+                document.getElementById('housingDetail').style.display = 'block';
+                document.getElementById('housingAmount').textContent = 
+                    '¥' + specialDeductions.details.housing.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('housingDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.elderCare > 0) {
+                document.getElementById('elderCareDetail').style.display = 'block';
+                document.getElementById('elderCareAmount').textContent = 
+                    '¥' + specialDeductions.details.elderCare.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('elderCareDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.personalPension > 0) {
+                document.getElementById('personalPensionDetail').style.display = 'block';
+                document.getElementById('personalPensionAmount').textContent = 
+                    '¥' + specialDeductions.details.personalPension.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('personalPensionDetail').style.display = 'none';
+            }
+            
+            if (specialDeductions.details.other > 0) {
+                document.getElementById('otherDetail').style.display = 'block';
+                document.getElementById('otherAmount').textContent = 
+                    '¥' + specialDeductions.details.other.toFixed(2) + '/月';
+                hasDeduction = true;
+            } else {
+                document.getElementById('otherDetail').style.display = 'none';
+            }
+            
+            // 显示扣除明细卡片
+            if (hasDeduction) {
+                document.getElementById('deductionDetails').style.display = 'block';
+                document.getElementById('totalDeductionAmount').textContent = 
+                    '¥' + specialDeductions.monthly.toFixed(2);
+            } else {
+                document.getElementById('deductionDetails').style.display = 'none';
+            }
+            
+            // 生成月度明细表
+            generateMonthlyDetails(monthlySalary, yearEndBonus, socialInsurance, specialDeductions, bonusTaxMethod);
+            
+            // 生成年度汇总
+            generateYearlySummary(yearlyGrossSalary, socialInsurance, specialDeductions, taxableIncome, tax, yearlyNetIncome);
+            
+            // 显示结果区域
+            document.getElementById('resultSection').style.display = 'block';
+            
+            // 滚动到结果
+            document.getElementById('resultSection').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+        }
+        
+        // 生成月度纳税明细
+        function generateMonthlyDetails(monthlySalary, yearEndBonus, socialInsurance, specialDeductions, bonusTaxMethod) {
+            const tbody = document.getElementById('monthlyDetailBody');
+            tbody.innerHTML = '';
+            
+            const threshold = 5000; // 月度起征点
+            let cumulativeTaxableIncome = 0; // 累计应纳税所得额
+            let cumulativeTax = 0; // 累计应纳税额
+            let previousTax = 0; // 上月累计已纳税额
+            
+            // 生成12个月的明细
+            for (let month = 1; month <= 12; month++) {
+                let monthlyIncome = monthlySalary;
+                let currentMonthTax = 0;
+                
+                if (bonusTaxMethod === 'separate' && yearEndBonus > 0) {
+                    // 年终奖单独计税：工资按累计预扣法，年终奖单独计算
+                    // 累计收入（不含年终奖）
+                    const cumulativeIncome = monthlySalary * month;
+                    
+                    // 累计扣除
+                    const cumulativeDeductions = (socialInsurance + specialDeductions.monthly) * month;
+                    
+                    // 累计起征点
+                    const cumulativeThreshold = threshold * month;
+                    
+                    // 累计应纳税所得额
+                    cumulativeTaxableIncome = Math.max(0, cumulativeIncome - cumulativeDeductions - cumulativeThreshold);
+                    
+                    // 计算累计应纳税额
+                    cumulativeTax = 0;
+                    for (const bracket of taxBrackets) {
+                        if (cumulativeTaxableIncome <= bracket.limit) {
+                            cumulativeTax = cumulativeTaxableIncome * bracket.rate - bracket.deduction;
+                            break;
+                        }
+                    }
+                    
+                    // 本月工资应纳税额
+                    currentMonthTax = Math.max(0, cumulativeTax - previousTax);
+                    
+                    // 12月加上年终奖
+                    if (month === 12) {
+                        monthlyIncome += yearEndBonus;
+                        const bonusTax = calculateBonusTaxSeparate(yearEndBonus);
+                        currentMonthTax += bonusTax;
+                    }
+                } else {
+                    // 年终奖并入综合所得：全部按累计预扣法
+                    // 当月收入（12月加上年终奖）
+                    monthlyIncome = month === 12 ? monthlySalary + yearEndBonus : monthlySalary;
+                    
+                    // 累计收入
+                    const cumulativeIncome = monthlySalary * month + (month === 12 ? yearEndBonus : 0);
+                    
+                    // 累计扣除
+                    const cumulativeDeductions = (socialInsurance + specialDeductions.monthly) * month;
+                    
+                    // 累计起征点
+                    const cumulativeThreshold = threshold * month;
+                    
+                    // 累计应纳税所得额
+                    cumulativeTaxableIncome = Math.max(0, cumulativeIncome - cumulativeDeductions - cumulativeThreshold);
+                    
+                    // 计算累计应纳税额
+                    cumulativeTax = 0;
+                    for (const bracket of taxBrackets) {
+                        if (cumulativeTaxableIncome <= bracket.limit) {
+                            cumulativeTax = cumulativeTaxableIncome * bracket.rate - bracket.deduction;
+                            break;
+                        }
+                    }
+                    
+                    // 本月应纳税额 = 累计应纳税额 - 累计已纳税额
+                    currentMonthTax = Math.max(0, cumulativeTax - previousTax);
+                }
+                
+                // 本月税后收入
+                const netIncome = monthlyIncome - socialInsurance - specialDeductions.monthly - currentMonthTax;
+                
+                // 创建表格行
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="fw-bold">${month}月</td>
+                    <td>¥${monthlyIncome.toFixed(2)}</td>
+                    <td>¥${socialInsurance.toFixed(2)}</td>
+                    <td>¥${specialDeductions.monthly.toFixed(2)}</td>
+                    <td>¥${cumulativeTaxableIncome.toFixed(2)}</td>
+                    <td>¥${cumulativeTax.toFixed(2)}</td>
+                    <td class="text-danger fw-bold">¥${currentMonthTax.toFixed(2)}</td>
+                    <td class="text-success fw-bold">¥${netIncome.toFixed(2)}</td>
+                `;
+                
+                tbody.appendChild(row);
+                
+                // 更新上月累计已纳税额
+                previousTax = cumulativeTax;
+            }
+            
+            // 显示月度明细表
+            document.getElementById('monthlyDetailTable').style.display = 'block';
+        }
+        
+        // 生成年度汇总
+        function generateYearlySummary(yearlyGrossIncome, socialInsurance, specialDeductions, taxableIncome, tax, netIncome) {
+            // 全年税前收入
+            document.getElementById('yearlyGrossIncome').textContent = 
+                '¥' + yearlyGrossIncome.toFixed(2);
+            
+            // 全年五险一金
+            document.getElementById('yearlySocialInsurance').textContent = 
+                '¥' + (socialInsurance * 12).toFixed(2);
+            
+            // 全年专项扣除
+            document.getElementById('yearlySpecialDeduction').textContent = 
+                '¥' + specialDeductions.yearly.toFixed(2);
+            
+            // 全年应纳税所得额
+            document.getElementById('yearlyTaxableIncome').textContent = 
+                '¥' + taxableIncome.toFixed(2);
+            
+            // 全年个人所得税
+            document.getElementById('yearlyTax').textContent = 
+                '¥' + tax.toFixed(2);
+            
+            // 全年税后收入
+            document.getElementById('yearlyNetIncome').textContent = 
+                '¥' + netIncome.toFixed(2);
+            
+            // 实际税率
+            const effectiveTaxRate = yearlyGrossIncome > 0 ? (tax / yearlyGrossIncome * 100) : 0;
+            document.getElementById('effectiveTaxRate').textContent = 
+                effectiveTaxRate.toFixed(2) + '%';
+            
+            // 显示年度汇总表
+            document.getElementById('yearlyDetailTable').style.display = 'block';
+        }
+        
+        // 回车键计算
+        document.getElementById('taxForm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                calculateTax();
+            }
+        });
+    </script>
+</body>
+</html>
