@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贷款计算器</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jQuery (用于加载公共组件) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 数据分析配置 -->
+    <script src="components/analytics-config.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        .calculator-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .calculator-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            margin-bottom: 0;
+        }
+        .calculator-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+            padding: 0 20px;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 15px 25px;
+            transition: all 0.3s ease;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #667eea;
+            border-color: transparent;
+        }
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            border-color: transparent;
+        }
+        .result-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .result-section h4 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .result-section h5 {
+            color: #764ba2;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .input-group-text {
+            min-width: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+        }
+        .table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table td {
+            padding: 12px;
+            vertical-align: middle;
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calculator-header {
+                padding: 20px;
+            }
+            
+            .calculator-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .calculator-header p {
+                font-size: 0.9rem;
+            }
+            
+            .nav-tabs {
+                padding: 0 10px;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .tab-content {
+                padding: 15px !important;
+            }
+            
+            .input-group-text {
+                min-width: 100px;
+                font-size: 0.85rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.9rem;
+            }
+            
+            .btn-primary, .btn-outline-primary {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .result-section {
+                padding: 15px;
+            }
+            
+            .result-section h4 {
+                font-size: 1.1rem;
+            }
+            
+            .result-section h5 {
+                font-size: 1rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .table {
+                font-size: 0.85rem;
+            }
+            
+            .table td {
+                padding: 8px;
+            }
+            
+            /* 表格横向滚动 */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            body {
+                padding: 5px;
+            }
+            
+            .calculator-card {
+                border-radius: 15px;
+            }
+            
+            .calculator-header {
+                padding: 15px;
+                border-radius: 15px 15px 0 0;
+            }
+            
+            .calculator-header h2 {
+                font-size: 1.25rem;
+            }
+            
+            .calculator-header p {
+                font-size: 0.85rem;
+            }
+            
+            .nav-tabs {
+                padding: 0 5px;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .tab-content {
+                padding: 10px !important;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 5px;
+            }
+            
+            .input-group-text {
+                min-width: 80px;
+                font-size: 0.8rem;
+                padding: 8px 10px;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.85rem;
+                padding: 8px 12px;
+            }
+            
+            .btn-primary, .btn-outline-primary {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .result-section {
+                padding: 12px;
+                margin-top: 15px;
+            }
+            
+            .result-section h4 {
+                font-size: 1rem;
+                margin-bottom: 15px;
+            }
+            
+            .result-section h5 {
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+            
+            .chart-container {
+                height: 200px;
+                padding: 10px;
+            }
+            
+            .table {
+                font-size: 0.75rem;
+            }
+            
+            .table td {
+                padding: 6px 4px;
+            }
+            
+            .modal-dialog {
+                margin: 10px;
+            }
+            
+            .modal-header {
+                padding: 15px;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 引入公共页头 -->
+    <div id="common-header"></div>
+    
+    <div class="container">
+        <div class="calculator-card">
+            <div class="calculator-header text-center">
+                <h2><i class="fas fa-calculator me-2"></i>贷款计算器</h2>
+                <p class="mb-0"><i class="fas fa-home me-2"></i>房贷计算器 & 提前还贷计算器</p>
+            </div>
+
+            <!-- 标签页导航 -->
+            <ul class="nav nav-tabs" id="calculatorTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="mortgage-tab" data-bs-toggle="tab" data-bs-target="#mortgage" type="button" role="tab">房贷计算器</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="prepayment-tab" data-bs-toggle="tab" data-bs-target="#prepayment" type="button" role="tab">提前还贷计算器</button>
+                </li>
+            </ul>
+
+            <div class="tab-content p-4" id="calculatorTabContent">
+                <!-- 房贷计算器 -->
+                <div class="tab-pane fade show active" id="mortgage" role="tabpanel">
+                    <form id="mortgageForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">贷款类型</label>
+                                    <select class="form-select" id="loanType">
+                                        <option value="commercial">商业贷款</option>
+                                        <option value="fund">公积金贷款</option>
+                                        <option value="combination">组合贷款</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">计算方式</label>
+                                    <select class="form-select" id="calcMethod">
+                                        <option value="total">按贷款总额计算</option>
+                                        <option value="price">按房屋总价+首付比例计算</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3" id="totalLoanGroup">
+                                    <label class="form-label">贷款总额（万元）<small class="text-muted ms-2">单位：万元</small></label>
+                                    <input type="number" class="form-control" id="totalLoan" placeholder="请输入贷款总额（万元）" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3 d-none" id="housePriceGroup">
+                                    <label class="form-label">房屋总价（万元）<small class="text-muted ms-2">单位：万元</small></label>
+                                    <input type="number" class="form-control" id="housePrice" placeholder="请输入房屋总价（万元）" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3 d-none" id="downPaymentGroup">
+                                    <label class="form-label">首付比例（%）</label>
+                                    <input type="number" class="form-control" id="downPayment" placeholder="请输入首付比例" min="0" max="100">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">贷款期限（年）</label>
+                                    <input type="number" class="form-control" id="loanTerm" placeholder="请输入贷款期限" min="1" max="30" value="30">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3" id="singleRateGroup">
+                                    <label class="form-label">贷款利率（%）</label>
+                                    <input type="number" class="form-control" id="interestRate" placeholder="请输入年利率" step="0.01" min="0">
+                                </div>
+                                
+                                <div class="mb-3 d-none" id="commercialRateGroup">
+                                    <label class="form-label">商业贷款利率（%）</label>
+                                    <input type="number" class="form-control" id="commercialRate" placeholder="请输入商业贷款年利率" step="0.01" min="0">
+                                </div>
+                                
+                                <div class="mb-3 d-none" id="fundRateGroup">
+                                    <label class="form-label">公积金贷款利率（%）</label>
+                                    <input type="number" class="form-control" id="fundRate" placeholder="请输入公积金贷款年利率" step="0.01" min="0">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">合同开始时间</label>
+                                    <input type="date" class="form-control" id="startDate">
+                                </div>
+                                
+                                <div class="mb-3" id="commercialLoanGroup">
+                                    <label class="form-label">商业贷款金额（万元）<small class="text-muted ms-2">单位：万元</small></label>
+                                    <input type="number" class="form-control" id="commercialLoan" placeholder="请输入商业贷款金额（万元）" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3 d-none" id="fundLoanGroup">
+                                    <label class="form-label">公积金贷款金额（万元）<small class="text-muted ms-2">单位：万元</small></label>
+                                    <input type="number" class="form-control" id="fundLoan" placeholder="请输入公积金贷款金额（万元）" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" onclick="calculateMortgage()">计算</button>
+                        </div>
+                    </form>
+                    
+                    <div id="mortgageResult" class="result-section d-none">
+                        <h4>计算结果</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>等额本息还款</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>每月还款：</td>
+                                        <td id="equalInterestMonthly"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>总还款额：</td>
+                                        <td id="equalInterestTotal"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>总利息：</td>
+                                        <td id="equalInterestInterest"></td>
+                                    </tr>
+                                </table>
+                                <button class="btn btn-outline-primary btn-sm" onclick="showEqualInterestDetail()">查看还款明细</button>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>等额本金还款</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>首月还款：</td>
+                                        <td id="equalPrincipalFirst"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>每月递减：</td>
+                                        <td id="equalPrincipalDecrease"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>总还款额：</td>
+                                        <td id="equalPrincipalTotal"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>总利息：</td>
+                                        <td id="equalPrincipalInterest"></td>
+                                    </tr>
+                                </table>
+                                <button class="btn btn-outline-primary btn-sm" onclick="showEqualPrincipalDetail()">查看还款明细</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="mortgageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 提前还贷计算器 -->
+                <div class="tab-pane fade" id="prepayment" role="tabpanel">
+                    <form id="prepaymentForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">贷款金额（万元）<small class="text-muted ms-2">单位：万元</small></label>
+                                    <input type="number" class="form-control" id="preLoanAmount" placeholder="请输入贷款金额（万元）" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">贷款利率（%）</label>
+                                    <input type="number" class="form-control" id="preInterestRate" placeholder="请输入年利率" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">贷款类型</label>
+                                    <select class="form-select" id="preLoanType">
+                                        <option value="equalInterest">等额本息</option>
+                                        <option value="equalPrincipal">等额本金</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">合同开始月份</label>
+                                    <input type="month" class="form-control" id="preStartDate">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">提前还款月份</label>
+                                    <input type="month" class="form-control" id="preRepayDate">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">提前还款金额（万元）<small class="text-muted ms-2">单位：万元</small></label>
+                                    <input type="number" class="form-control" id="preRepayAmount" placeholder="请输入提前还款金额（万元）" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">提前还款方式</label>
+                                    <select class="form-select" id="preRepayMethod">
+                                        <option value="partial">部分还款</option>
+                                        <option value="full">全部还款</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">新贷款利率（%）（可选）</label>
+                                    <input type="number" class="form-control" id="newInterestRate" placeholder="请输入新利率" step="0.01">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">新还款方式（可选）</label>
+                                    <select class="form-select" id="newRepayMethod">
+                                        <option value="">保持原方式</option>
+                                        <option value="equalInterest">等额本息</option>
+                                        <option value="equalPrincipal">等额本金</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">还款后处理方式</label>
+                                    <select class="form-select" id="postProcess">
+                                        <option value="reducePayment">年限不变降低月供</option>
+                                        <option value="reduceTerm">月供不变减少年限</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-primary" onclick="calculatePrepayment()">计算提前还款</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="addAnotherPrepayment()" id="addPrepaymentBtn" style="display:none;">
+                                <i class="fas fa-plus me-2"></i>添加下一次提前还款
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="resetPrepayment()" id="resetPrepaymentBtn" style="display:none;">
+                                <i class="fas fa-redo me-2"></i>重新计算
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="prepaymentResult" class="result-section d-none">
+                        <h4>计算结果</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>已还信息</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>已还期数：</td>
+                                        <td id="paidTerms"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>已还本金：</td>
+                                        <td id="paidPrincipal"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>已还利息：</td>
+                                        <td id="paidInterest"></td>
+                                    </tr>
+                                </table>
+                                
+                                <h5>提前还款信息</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>提前还款本金：</td>
+                                        <td id="preRepayPrincipal"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>提前还款利息：</td>
+                                        <td id="preRepayInterest"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>提前还之后贷款信息</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>剩余本金：</td>
+                                        <td id="remainingPrincipal"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>新月供：</td>
+                                        <td id="newMonthlyPayment"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>剩余期数：</td>
+                                        <td id="remainingTerms"></td>
+                                    </tr>
+                                </table>
+                                
+                                <h5>节省还款信息</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>节省利息：</td>
+                                        <td id="savedInterest"></td>
+                                    </tr>
+                                    <tr>
+                                        <td>节省时间：</td>
+                                        <td id="savedTime"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="prepaymentChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-outline-primary" onclick="showPrepaymentDetail()">查看还款明细对比</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel">还款明细</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="detailTable">
+                            <thead>
+                                <tr>
+                                    <th>期数</th>
+                                    <th>还款日期</th>
+                                    <th>还款金额</th>
+                                    <th>本金</th>
+                                    <th>利息</th>
+                                    <th>剩余本金</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 全局变量存储提前还款历史
+        let prepaymentHistory = [];
+        let originalLoanData = null;
+        let isAddingNewPrepayment = false; // 标记是否正在添加新的提前还款
+        
+        // 初始化日期控件
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('startDate').valueAsDate = firstDay;
+            
+            const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), 1);
+            document.getElementById('preStartDate').value = today.toISOString().slice(0, 7);
+            document.getElementById('preRepayDate').value = nextYear.toISOString().slice(0, 7);
+            
+            // 组合贷款相关字段显示控制
+            document.getElementById('loanType').addEventListener('change', function() {
+                const commercialGroup = document.getElementById('commercialLoanGroup');
+                const fundGroup = document.getElementById('fundLoanGroup');
+                const singleRateGroup = document.getElementById('singleRateGroup');
+                const commercialRateGroup = document.getElementById('commercialRateGroup');
+                const fundRateGroup = document.getElementById('fundRateGroup');
+                
+                if (this.value === 'combination') {
+                    commercialGroup.classList.remove('d-none');
+                    fundGroup.classList.remove('d-none');
+                    singleRateGroup.classList.add('d-none');
+                    commercialRateGroup.classList.remove('d-none');
+                    fundRateGroup.classList.remove('d-none');
+                } else {
+                    commercialGroup.classList.add('d-none');
+                    fundGroup.classList.add('d-none');
+                    singleRateGroup.classList.remove('d-none');
+                    commercialRateGroup.classList.add('d-none');
+                    fundRateGroup.classList.add('d-none');
+                }
+            });
+            
+            // 计算方式切换控制
+            document.getElementById('calcMethod').addEventListener('change', function() {
+                const totalLoanGroup = document.getElementById('totalLoanGroup');
+                const housePriceGroup = document.getElementById('housePriceGroup');
+                const downPaymentGroup = document.getElementById('downPaymentGroup');
+                
+                if (this.value === 'total') {
+                    totalLoanGroup.classList.remove('d-none');
+                    housePriceGroup.classList.add('d-none');
+                    downPaymentGroup.classList.add('d-none');
+                } else {
+                    totalLoanGroup.classList.add('d-none');
+                    housePriceGroup.classList.remove('d-none');
+                    downPaymentGroup.classList.remove('d-none');
+                }
+            });
+        });
+        
+        // 房贷计算函数
+        function calculateMortgage() {
+            // 获取输入值
+            const loanType = document.getElementById('loanType').value;
+            const calcMethod = document.getElementById('calcMethod').value;
+            let loanAmount = 0;
+            
+            if (calcMethod === 'total') {
+                loanAmount = (parseFloat(document.getElementById('totalLoan').value) || 0) * 10000; // 万元转元
+            } else {
+                const housePrice = (parseFloat(document.getElementById('housePrice').value) || 0) * 10000; // 万元转元
+                const downPayment = parseFloat(document.getElementById('downPayment').value) || 0;
+                loanAmount = housePrice * (1 - downPayment / 100);
+            }
+            
+            const loanTerm = parseFloat(document.getElementById('loanTerm').value) || 0;
+            
+            // 根据贷款类型获取利率
+            let interestRate = 0;
+            let commercialLoanAmount = 0;
+            let fundLoanAmount = 0;
+            let commercialRate = 0;
+            let fundRate = 0;
+            
+            if (loanType === 'combination') {
+                // 组合贷款
+                commercialLoanAmount = (parseFloat(document.getElementById('commercialLoan').value) || 0) * 10000;
+                fundLoanAmount = (parseFloat(document.getElementById('fundLoan').value) || 0) * 10000;
+                commercialRate = parseFloat(document.getElementById('commercialRate').value) || 0;
+                fundRate = parseFloat(document.getElementById('fundRate').value) || 0;
+                
+                if (commercialLoanAmount <= 0 || fundLoanAmount <= 0 || commercialRate <= 0 || fundRate <= 0) {
+                    alert('请填写完整的组合贷款信息');
+                    return;
+                }
+                
+                // 计算组合贷款的加权平均利率
+                loanAmount = commercialLoanAmount + fundLoanAmount;
+                interestRate = (commercialLoanAmount * commercialRate + fundLoanAmount * fundRate) / loanAmount;
+            } else {
+                interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+                
+                if (loanAmount <= 0 || loanTerm <= 0 || interestRate <= 0) {
+                    alert('请填写正确的贷款信息');
+                    return;
+                }
+            }
+            
+            // 计算等额本息
+            const monthlyRate = interestRate / 100 / 12;
+            const totalMonths = loanTerm * 12;
+            const equalInterestMonthly = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+            const equalInterestTotal = equalInterestMonthly * totalMonths;
+            const equalInterestInterest = equalInterestTotal - loanAmount;
+            
+            // 计算等额本金
+            const equalPrincipalMonthly = loanAmount / totalMonths;
+            const equalPrincipalFirst = equalPrincipalMonthly + loanAmount * monthlyRate;
+            const equalPrincipalDecrease = equalPrincipalMonthly * monthlyRate;
+            const equalPrincipalInterest = (loanAmount * monthlyRate * (totalMonths + 1)) / 2;
+            const equalPrincipalTotal = loanAmount + equalPrincipalInterest;
+            
+            // 显示结果
+            document.getElementById('equalInterestMonthly').textContent = equalInterestMonthly.toFixed(2) + ' 元';
+            document.getElementById('equalInterestTotal').textContent = equalInterestTotal.toFixed(2) + ' 元';
+            document.getElementById('equalInterestInterest').textContent = equalInterestInterest.toFixed(2) + ' 元';
+            
+            document.getElementById('equalPrincipalFirst').textContent = equalPrincipalFirst.toFixed(2) + ' 元';
+            document.getElementById('equalPrincipalDecrease').textContent = equalPrincipalDecrease.toFixed(2) + ' 元/月';
+            document.getElementById('equalPrincipalTotal').textContent = equalPrincipalTotal.toFixed(2) + ' 元';
+            document.getElementById('equalPrincipalInterest').textContent = equalPrincipalInterest.toFixed(2) + ' 元';
+            
+            // 显示结果区域
+            document.getElementById('mortgageResult').classList.remove('d-none');
+            
+            // 绘制图表
+            drawMortgageChart(equalInterestTotal, equalPrincipalTotal, equalInterestInterest, equalPrincipalInterest);
+        }
+        
+        // 绘制房贷图表
+        function drawMortgageChart(equalInterestTotal, equalPrincipalTotal, equalInterestInterest, equalPrincipalInterest) {
+            const ctx = document.getElementById('mortgageChart').getContext('2d');
+            if (window.mortgageChart) {
+                window.mortgageChart.destroy();
+            }
+            
+            window.mortgageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['等额本息', '等额本金'],
+                    datasets: [
+                        {
+                            label: '总还款金额',
+                            data: [equalInterestTotal, equalPrincipalTotal],
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                        },
+                        {
+                            label: '总利息',
+                            data: [equalInterestInterest, equalPrincipalInterest],
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + '元';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 显示等额本息详情
+        function showEqualInterestDetail() {
+            const loanAmount = (parseFloat(document.getElementById('totalLoan').value) || 0) * 10000; // 万元转元
+            const loanTerm = parseFloat(document.getElementById('loanTerm').value) || 0;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const startDate = new Date(document.getElementById('startDate').value);
+            
+            if (loanAmount <= 0 || loanTerm <= 0 || interestRate <= 0) {
+                alert('请先计算贷款');
+                return;
+            }
+            
+            const detailTableBody = document.getElementById('detailTableBody');
+            detailTableBody.innerHTML = '';
+            
+            const monthlyRate = interestRate / 100 / 12;
+            const totalMonths = loanTerm * 12;
+            const monthlyPayment = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+            
+            let remainingPrincipal = loanAmount;
+            
+            for (let i = 1; i <= totalMonths; i++) {
+                const interestPayment = remainingPrincipal * monthlyRate;
+                const principalPayment = monthlyPayment - interestPayment;
+                remainingPrincipal -= principalPayment;
+                
+                const paymentDate = new Date(startDate);
+                paymentDate.setMonth(paymentDate.getMonth() + i);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td>${paymentDate.toISOString().slice(0, 10)}</td>
+                    <td>${monthlyPayment.toFixed(2)}</td>
+                    <td>${principalPayment.toFixed(2)}</td>
+                    <td>${interestPayment.toFixed(2)}</td>
+                    <td>${Math.max(0, remainingPrincipal).toFixed(2)}</td>
+                `;
+                detailTableBody.appendChild(row);
+            }
+            
+            document.getElementById('detailModalLabel').textContent = '等额本息还款明细';
+            
+            // 恢复表头为标准格式
+            const detailTable = document.getElementById('detailTable');
+            const thead = detailTable.querySelector('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>期数</th>
+                    <th>还款日期</th>
+                    <th>还款金额</th>
+                    <th>本金</th>
+                    <th>利息</th>
+                    <th>剩余本金</th>
+                </tr>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+        }
+        
+        // 显示等额本金详情
+        function showEqualPrincipalDetail() {
+            const loanAmount = (parseFloat(document.getElementById('totalLoan').value) || 0) * 10000; // 万元转元
+            const loanTerm = parseFloat(document.getElementById('loanTerm').value) || 0;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const startDate = new Date(document.getElementById('startDate').value);
+            
+            if (loanAmount <= 0 || loanTerm <= 0 || interestRate <= 0) {
+                alert('请先计算贷款');
+                return;
+            }
+            
+            const detailTableBody = document.getElementById('detailTableBody');
+            detailTableBody.innerHTML = '';
+            
+            const monthlyRate = interestRate / 100 / 12;
+            const totalMonths = loanTerm * 12;
+            const monthlyPrincipal = loanAmount / totalMonths;
+            
+            let remainingPrincipal = loanAmount;
+            
+            for (let i = 1; i <= totalMonths; i++) {
+                const interestPayment = remainingPrincipal * monthlyRate;
+                const totalPayment = monthlyPrincipal + interestPayment;
+                remainingPrincipal -= monthlyPrincipal;
+                
+                const paymentDate = new Date(startDate);
+                paymentDate.setMonth(paymentDate.getMonth() + i);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td>${paymentDate.toISOString().slice(0, 10)}</td>
+                    <td>${totalPayment.toFixed(2)}</td>
+                    <td>${monthlyPrincipal.toFixed(2)}</td>
+                    <td>${interestPayment.toFixed(2)}</td>
+                    <td>${Math.max(0, remainingPrincipal).toFixed(2)}</td>
+                `;
+                detailTableBody.appendChild(row);
+            }
+            
+            document.getElementById('detailModalLabel').textContent = '等额本金还款明细';
+            
+            // 恢复表头为标准格式
+            const detailTable = document.getElementById('detailTable');
+            const thead = detailTable.querySelector('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>期数</th>
+                    <th>还款日期</th>
+                    <th>还款金额</th>
+                    <th>本金</th>
+                    <th>利息</th>
+                    <th>剩余本金</th>
+                </tr>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+        }
+        
+        // 提前还贷计算函数
+        function calculatePrepayment() {
+            // 获取输入值（万元转元）
+            const loanAmount = (parseFloat(document.getElementById('preLoanAmount').value) || 0) * 10000;
+            const interestRate = parseFloat(document.getElementById('preInterestRate').value) || 0;
+            const loanType = document.getElementById('preLoanType').value;
+            const startDate = document.getElementById('preStartDate').value;
+            const repayDate = document.getElementById('preRepayDate').value;
+            const repayAmount = (parseFloat(document.getElementById('preRepayAmount').value) || 0) * 10000;
+            const repayMethod = document.getElementById('preRepayMethod').value;
+            const postProcess = document.getElementById('postProcess').value;
+            
+            if (loanAmount <= 0 || interestRate <= 0 || repayAmount <= 0 || !startDate || !repayDate) {
+                alert('请填写完整的贷款信息');
+                return;
+            }
+            
+            // 如果是第一次计算，保存原始贷款数据
+            if (prepaymentHistory.length === 0) {
+                originalLoanData = {
+                    loanAmount: loanAmount,
+                    interestRate: interestRate,
+                    loanType: loanType,
+                    startDate: startDate,
+                    totalMonths: 360 // 假设30年
+                };
+            }
+            
+            // 计算已还月数
+            const start = new Date(startDate);
+            const repay = new Date(repayDate);
+            const monthsDiff = (repay.getFullYear() - start.getFullYear()) * 12 + (repay.getMonth() - start.getMonth());
+            
+            // 计算月利率
+            const monthlyRate = interestRate / 100 / 12;
+            const totalMonths = 360; // 假设30年
+            
+            // 计算已还本金和利息
+            let paidPrincipal = 0;
+            let paidInterest = 0;
+            let remainingPrincipal = loanAmount;
+            
+            if (loanType === 'equalInterest') {
+                // 等额本息
+                const monthlyPayment = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                for (let i = 0; i < monthsDiff; i++) {
+                    const interestPayment = remainingPrincipal * monthlyRate;
+                    const principalPayment = monthlyPayment - interestPayment;
+                    paidInterest += interestPayment;
+                    paidPrincipal += principalPayment;
+                    remainingPrincipal -= principalPayment;
+                }
+            } else {
+                // 等额本金
+                const monthlyPrincipal = loanAmount / totalMonths;
+                for (let i = 0; i < monthsDiff; i++) {
+                    const interestPayment = remainingPrincipal * monthlyRate;
+                    paidInterest += interestPayment;
+                    paidPrincipal += monthlyPrincipal;
+                    remainingPrincipal -= monthlyPrincipal;
+                }
+            }
+            
+            // 提前还款后的剩余本金
+            const beforePrepayPrincipal = remainingPrincipal;
+            remainingPrincipal = beforePrepayPrincipal - repayAmount;
+            
+            if (remainingPrincipal < 0) {
+                alert('提前还款金额超过剩余本金');
+                return;
+            }
+            
+            // 计算剩余月数
+            const remainingMonths = totalMonths - monthsDiff;
+            
+            // 计算新的月供和节省的利息
+            let newMonthlyPayment = 0;
+            let newRemainingMonths = remainingMonths;
+            let savedInterest = 0;
+            let savedMonths = 0;
+            
+            if (repayMethod === 'full') {
+                // 全部还清
+                newMonthlyPayment = 0;
+                newRemainingMonths = 0;
+                savedMonths = remainingMonths;
+                
+                // 计算原本还需要支付的利息
+                if (loanType === 'equalInterest') {
+                    const originalMonthlyPayment = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                    let tempRemaining = beforePrepayPrincipal;
+                    for (let i = 0; i < remainingMonths; i++) {
+                        savedInterest += tempRemaining * monthlyRate;
+                        tempRemaining -= (originalMonthlyPayment - tempRemaining * monthlyRate);
+                    }
+                } else {
+                    const monthlyPrincipal = loanAmount / totalMonths;
+                    let tempRemaining = beforePrepayPrincipal;
+                    for (let i = 0; i < remainingMonths; i++) {
+                        savedInterest += tempRemaining * monthlyRate;
+                        tempRemaining -= monthlyPrincipal;
+                    }
+                }
+            } else {
+                // 部分还款
+                if (postProcess === 'reducePayment') {
+                    // 减少月供，保持期限
+                    if (loanType === 'equalInterest') {
+                        newMonthlyPayment = remainingPrincipal * monthlyRate * Math.pow(1 + monthlyRate, remainingMonths) / (Math.pow(1 + monthlyRate, remainingMonths) - 1);
+                    } else {
+                        newMonthlyPayment = remainingPrincipal / remainingMonths + remainingPrincipal * monthlyRate;
+                    }
+                    newRemainingMonths = remainingMonths;
+                    
+                    // 计算节省的利息
+                    const originalMonthlyPayment = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                    savedInterest = (originalMonthlyPayment - newMonthlyPayment) * remainingMonths;
+                } else {
+                    // 减少期限，保持月供
+                    const originalMonthlyPayment = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+                    newMonthlyPayment = originalMonthlyPayment;
+                    
+                    // 计算新的还款期限
+                    if (loanType === 'equalInterest') {
+                        newRemainingMonths = Math.ceil(Math.log(newMonthlyPayment / (newMonthlyPayment - remainingPrincipal * monthlyRate)) / Math.log(1 + monthlyRate));
+                    } else {
+                        newRemainingMonths = Math.ceil(remainingPrincipal / (newMonthlyPayment - remainingPrincipal * monthlyRate));
+                    }
+                    
+                    savedMonths = remainingMonths - newRemainingMonths;
+                    
+                    // 计算节省的利息
+                    let tempRemaining = remainingPrincipal;
+                    for (let i = 0; i < newRemainingMonths; i++) {
+                        const interestPayment = tempRemaining * monthlyRate;
+                        tempRemaining -= (newMonthlyPayment - interestPayment);
+                    }
+                    const newTotalInterest = newMonthlyPayment * newRemainingMonths - remainingPrincipal;
+                    
+                    tempRemaining = beforePrepayPrincipal;
+                    let originalTotalInterest = 0;
+                    for (let i = 0; i < remainingMonths; i++) {
+                        const interestPayment = tempRemaining * monthlyRate;
+                        originalTotalInterest += interestPayment;
+                        tempRemaining -= (originalMonthlyPayment - interestPayment);
+                    }
+                    
+                    savedInterest = originalTotalInterest - newTotalInterest;
+                }
+            }
+            
+            // 显示结果
+            document.getElementById('preRepayPrincipal').textContent = repayAmount.toFixed(2) + ' 元';
+            document.getElementById('preRepayInterest').textContent = '0.00 元';
+            document.getElementById('remainingPrincipal').textContent = remainingPrincipal.toFixed(2) + ' 元';
+            document.getElementById('newMonthlyPayment').textContent = newMonthlyPayment.toFixed(2) + ' 元';
+            document.getElementById('remainingTerms').textContent = newRemainingMonths + ' 期';
+            document.getElementById('savedInterest').textContent = savedInterest.toFixed(2) + ' 元';
+            document.getElementById('savedTime').textContent = savedMonths + ' 个月';
+            
+            // 显示已还信息
+            document.getElementById('paidTerms').textContent = monthsDiff + ' 期';
+            document.getElementById('paidPrincipal').textContent = paidPrincipal.toFixed(2) + ' 元';
+            document.getElementById('paidInterest').textContent = paidInterest.toFixed(2) + ' 元';
+            
+            // 保存或更新提前还款记录
+            const currentPrepayment = {
+                date: repayDate,
+                amount: repayAmount,
+                remainingPrincipal: remainingPrincipal,
+                newMonthlyPayment: newMonthlyPayment || 0,
+                remainingMonths: repayMethod === 'full' ? 0 : newRemainingMonths
+            };
+            
+            if (isAddingNewPrepayment) {
+                // 点击了"添加下一次提前还款"后的首次计算，添加新记录
+                prepaymentHistory.push(currentPrepayment);
+                isAddingNewPrepayment = false; // 重置标记
+            } else if (prepaymentHistory.length === 0) {
+                // 首次计算，添加新记录
+                prepaymentHistory.push(currentPrepayment);
+            } else {
+                // 重复点击"计算提前还款"按钮，更新最后一条记录
+                prepaymentHistory[prepaymentHistory.length - 1] = currentPrepayment;
+            }
+            
+            // 显示结果区域
+            document.getElementById('prepaymentResult').classList.remove('d-none');
+            
+            // 显示添加下一次提前还款按钮
+            if (repayMethod !== 'full' && remainingPrincipal > 0) {
+                document.getElementById('addPrepaymentBtn').style.display = 'block';
+            }
+            document.getElementById('resetPrepaymentBtn').style.display = 'block';
+            
+            // 绘制图表
+            drawPrepaymentChart(paidInterest, savedInterest, paidPrincipal, remainingPrincipal);
+        }
+        
+        // 添加下一次提前还款
+        function addAnotherPrepayment() {
+            if (prepaymentHistory.length === 0) {
+                alert('请先完成第一次提前还款计算');
+                return;
+            }
+            
+            const lastPrepayment = prepaymentHistory[prepaymentHistory.length - 1];
+            
+            // 设置标记：下一次计算是新增记录
+            isAddingNewPrepayment = true;
+            
+            // 更新表单数据为上次还款后的状态
+            document.getElementById('preLoanAmount').value = (lastPrepayment.remainingPrincipal / 10000).toFixed(2);
+            document.getElementById('preLoanAmount').disabled = true;
+            
+            // 设置新的还款日期（上次还款日期后一个月）
+            const lastDate = new Date(lastPrepayment.date);
+            lastDate.setMonth(lastDate.getMonth() + 1);
+            document.getElementById('preRepayDate').value = lastDate.toISOString().slice(0, 7);
+            document.getElementById('preRepayDate').min = lastDate.toISOString().slice(0, 7);
+            
+            // 清空提前还款金额
+            document.getElementById('preRepayAmount').value = '';
+            document.getElementById('preRepayAmount').focus();
+            
+            alert(`当前剩余本金：${(lastPrepayment.remainingPrincipal / 10000).toFixed(2)}万元\n请输入下一次提前还款金额`);
+        }
+        
+        // 重置提前还款计算
+        function resetPrepayment() {
+            prepaymentHistory = [];
+            originalLoanData = null;
+            isAddingNewPrepayment = false; // 重置标记
+            
+            // 重置表单
+            document.getElementById('preLoanAmount').disabled = false;
+            document.getElementById('preLoanAmount').value = '';
+            document.getElementById('preRepayAmount').value = '';
+            document.getElementById('preRepayDate').removeAttribute('min');
+            
+            // 隐藏按钮和结果
+            document.getElementById('addPrepaymentBtn').style.display = 'none';
+            document.getElementById('resetPrepaymentBtn').style.display = 'none';
+            document.getElementById('prepaymentResult').classList.add('d-none');
+        }
+        
+        // 绘制提前还贷图表
+        function drawPrepaymentChart(originalInterest, savedInterest, originalPrincipal, remainingPrincipal) {
+            const ctx = document.getElementById('prepaymentChart').getContext('2d');
+            if (window.prepaymentChart) {
+                window.prepaymentChart.destroy();
+            }
+            
+            window.prepaymentChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['已还利息', '节省利息', '已还本金', '剩余本金'],
+                    datasets: [{
+                        data: [originalInterest, savedInterest, originalPrincipal, remainingPrincipal],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 205, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+        
+        // 显示提前还贷详情
+        function showPrepaymentDetail() {
+            if (!originalLoanData || prepaymentHistory.length === 0) {
+                alert('请先计算提前还贷');
+                return;
+            }
+            
+            const detailTableBody = document.getElementById('detailTableBody');
+            detailTableBody.innerHTML = '';
+            
+            const interestRate = originalLoanData.interestRate;
+            const loanType = originalLoanData.loanType;
+            const startDate = new Date(originalLoanData.startDate);
+            const monthlyRate = interestRate / 100 / 12;
+            const totalMonths = originalLoanData.totalMonths;
+            const initialLoanAmount = originalLoanData.loanAmount;
+            
+            // 计算原始月供
+            let originalMonthlyPayment = 0;
+            if (loanType === 'equalInterest') {
+                originalMonthlyPayment = initialLoanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+            } else {
+                originalMonthlyPayment = initialLoanAmount / totalMonths + initialLoanAmount * monthlyRate;
+            }
+            
+            // 修改表头为提前还款对比格式
+            const detailTable = document.getElementById('detailTable');
+            const thead = detailTable.querySelector('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>期数</th>
+                    <th>还款日期</th>
+                    <th>还款类型</th>
+                    <th>原月供</th>
+                    <th>实际还款</th>
+                    <th>本金</th>
+                    <th>利息</th>
+                    <th>剩余本金</th>
+                </tr>
+            `;
+            
+            // 创建提前还款日期映射（用于快速查找）
+            const prepaymentMap = {};
+            prepaymentHistory.forEach(prepay => {
+                const date = new Date(prepay.date);
+                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                prepaymentMap[key] = prepay;
+            });
+            
+            // 从贷款开始日期生成完整的还款计划
+            let remainingPrincipal = initialLoanAmount;
+            let currentMonthlyPayment = originalMonthlyPayment;
+            let currentRemainingMonths = totalMonths;
+            let actualEndMonth = 0; // 实际结束月份
+            
+            for (let i = 1; i <= totalMonths; i++) {
+                const paymentDate = new Date(startDate);
+                paymentDate.setMonth(paymentDate.getMonth() + i);
+                const dateKey = `${paymentDate.getFullYear()}-${String(paymentDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                // 检查当前月份是否有提前还款
+                const prepayment = prepaymentMap[dateKey];
+                
+                if (prepayment) {
+                    // 提前还款月份 - 先显示正常还款，再显示提前还款
+                    
+                    // 1. 正常月供还款
+                    let monthlyPayment, principalPayment, interestPayment;
+                    
+                    if (loanType === 'equalInterest') {
+                        monthlyPayment = currentMonthlyPayment;
+                        interestPayment = remainingPrincipal * monthlyRate;
+                        principalPayment = monthlyPayment - interestPayment;
+                    } else {
+                        principalPayment = initialLoanAmount / totalMonths;
+                        interestPayment = remainingPrincipal * monthlyRate;
+                        monthlyPayment = principalPayment + interestPayment;
+                    }
+                    
+                    remainingPrincipal -= principalPayment;
+                    
+                    const normalRow = document.createElement('tr');
+                    normalRow.innerHTML = `
+                        <td>${i}</td>
+                        <td>${paymentDate.toISOString().slice(0, 10)}</td>
+                        <td><span class="badge bg-primary">正常还款</span></td>
+                        <td class="text-muted">${originalMonthlyPayment.toFixed(2)}</td>
+                        <td>${monthlyPayment.toFixed(2)}</td>
+                        <td>${principalPayment.toFixed(2)}</td>
+                        <td>${interestPayment.toFixed(2)}</td>
+                        <td>${remainingPrincipal.toFixed(2)}</td>
+                    `;
+                    detailTableBody.appendChild(normalRow);
+                    
+                    // 2. 提前还款
+                    remainingPrincipal -= prepayment.amount;
+                    
+                    const prepayRow = document.createElement('tr');
+                    prepayRow.className = 'table-warning';
+                    prepayRow.innerHTML = `
+                        <td>${i}</td>
+                        <td>${paymentDate.toISOString().slice(0, 10)}</td>
+                        <td><span class="badge bg-warning text-dark">🎯 提前还款</span></td>
+                        <td class="text-muted">-</td>
+                        <td class="text-danger fw-bold">${prepayment.amount.toFixed(2)}</td>
+                        <td class="text-danger fw-bold">${prepayment.amount.toFixed(2)}</td>
+                        <td>0.00</td>
+                        <td class="text-success fw-bold">${remainingPrincipal.toFixed(2)}</td>
+                    `;
+                    detailTableBody.appendChild(prepayRow);
+                    
+                    // 更新后续的月供和剩余期数
+                    currentMonthlyPayment = prepayment.newMonthlyPayment;
+                    currentRemainingMonths = prepayment.remainingMonths;
+                    actualEndMonth = i + currentRemainingMonths;
+                    
+                    // 如果是全部还清，结束循环
+                    if (remainingPrincipal <= 0) {
+                        break;
+                    }
+                } else {
+                    // 正常还款月份
+                    let monthlyPayment, principalPayment, interestPayment;
+                    
+                    if (loanType === 'equalInterest') {
+                        monthlyPayment = currentMonthlyPayment;
+                        interestPayment = remainingPrincipal * monthlyRate;
+                        principalPayment = monthlyPayment - interestPayment;
+                    } else {
+                        if (currentRemainingMonths > 0) {
+                            principalPayment = remainingPrincipal / currentRemainingMonths;
+                        } else {
+                            principalPayment = initialLoanAmount / totalMonths;
+                        }
+                        interestPayment = remainingPrincipal * monthlyRate;
+                        monthlyPayment = principalPayment + interestPayment;
+                    }
+                    
+                    remainingPrincipal -= principalPayment;
+                    currentRemainingMonths--;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${i}</td>
+                        <td>${paymentDate.toISOString().slice(0, 10)}</td>
+                        <td><span class="badge bg-secondary">正常还款</span></td>
+                        <td class="text-muted">${originalMonthlyPayment.toFixed(2)}</td>
+                        <td class="text-success fw-bold">${monthlyPayment.toFixed(2)}</td>
+                        <td>${principalPayment.toFixed(2)}</td>
+                        <td>${interestPayment.toFixed(2)}</td>
+                        <td>${Math.max(0, remainingPrincipal).toFixed(2)}</td>
+                    `;
+                    detailTableBody.appendChild(row);
+                    
+                    // 如果剩余本金为0或剩余期数为0，结束循环
+                    if (remainingPrincipal <= 0 || currentRemainingMonths <= 0) {
+                        break;
+                    }
+                }
+            }
+            
+            const totalPrepayAmount = prepaymentHistory.reduce((sum, p) => sum + p.amount, 0);
+            
+            // 从页面获取节省的利息（已经在 calculatePrepayment 中计算并显示）
+            const savedInterestText = document.getElementById('savedInterest').textContent;
+            const savedInterest = parseFloat(savedInterestText.replace(' 元', '')) || 0;
+            
+            document.getElementById('detailModalLabel').textContent = 
+                `完整还款明细（含${prepaymentHistory.length}次提前还款，共${(totalPrepayAmount / 10000).toFixed(2)}万元，共节省${(savedInterest / 10000).toFixed(2)}万元利息）`;
+            
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+        }
+    </script>
+    
+    <!-- 引入公共页脚 -->
+    <div id="common-footer"></div>
+    
+    <!-- 加载公共组件 -->
+    <!-- <script>
+        $(document).ready(function() {
+            $('#common-header').load('components/common-header.html');
+            $('#common-footer').load('components/common-footer.html');
+        });
+    </script> -->
+</body>
+</html>
